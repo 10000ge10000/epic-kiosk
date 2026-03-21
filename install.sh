@@ -2,7 +2,7 @@
 # ============================================================
 # Epic Kiosk 一键部署脚本
 # ============================================================
-# GitHub: https://github.com/10000ge10000/epic-awesome-gamer
+# GitHub: https://github.com/10000ge10000/epic-kiosk
 # 公益站点: https://epic.910501.xyz/
 # ============================================================
 
@@ -255,7 +255,7 @@ clone_project() {
     fi
 
     print_info "克隆项目..."
-    git clone -b Epic-Autopilot https://github.com/10000ge10000/epic-awesome-gamer.git "$PROJECT_DIR"
+    git clone -b main https://github.com/10000ge10000/epic-kiosk.git "$PROJECT_DIR"
 
     print_success "项目克隆完成"
 }
@@ -318,7 +318,7 @@ show_complete() {
     echo ""
     echo -e "${CYAN}相关链接:${NC}"
     echo "  公益站点: https://epic.910501.xyz/"
-    echo "  GitHub: https://github.com/10000ge10000/epic-awesome-gamer"
+    echo "  GitHub: https://github.com/10000ge10000/epic-kiosk"
     echo "  B 站频道: https://space.bilibili.com/59438380"
     echo ""
     echo -e "${GREEN}感谢使用 Epic Kiosk!${NC}"

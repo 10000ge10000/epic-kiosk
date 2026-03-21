@@ -2,7 +2,7 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [ main, Epic-Autopilot ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:  # 手动触发
@@ -49,8 +49,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix=
-            # main 和 Epic-Autopilot 分支都打 latest 标签
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/Epic-Autopilot' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Worker
         uses: docker/build-push-action@v5
@@ -75,8 +74,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix=
-            # main 和 Epic-Autopilot 分支都打 latest 标签
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/Epic-Autopilot' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Web
         uses: docker/build-push-action@v5

@@ -16,8 +16,8 @@
 
 ### 1️⃣ 克隆项目
 ```bash
-git clone -b Epic-Autopilot https://github.com/10000ge10000/epic-awesome-gamer.git
-cd epic-awesome-gamer
+git clone -b main https://github.com/10000ge10000/epic-kiosk.git
+cd epic-kiosk
 ```
 
 ### 2️⃣ 配置 API Key

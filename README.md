@@ -35,7 +35,7 @@
 适用于：云服务器、VPS、Linux 主机
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-awesome-gamer/Epic-Autopilot/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-kiosk/main/install.sh | bash
 ```
 
 **脚本功能**：
@@ -89,7 +89,7 @@ services:
 
   # Web: 前端服务（GitHub Actions 自动构建）
   web:
-    image: ghcr.io/10000ge10000/epic-awesome-gamer-web:latest
+    image: ghcr.io/10000ge10000/epic-kiosk-web:latest
     container_name: epic-web
     ports:
       - "18000:8000"
@@ -105,7 +105,7 @@ services:
 
   # Worker: 后台任务执行器（GitHub Actions 自动构建）
   worker:
-    image: ghcr.io/10000ge10000/epic-awesome-gamer-worker:latest
+    image: ghcr.io/10000ge10000/epic-kiosk-worker:latest
     container_name: epic-worker
     user: root
     volumes:
@@ -158,8 +158,8 @@ services:
 
 ```bash
 # 1. 克隆项目
-git clone -b Epic-Autopilot https://github.com/10000ge10000/epic-awesome-gamer.git
-cd epic-awesome-gamer
+git clone -b main https://github.com/10000ge10000/epic-kiosk.git
+cd epic-kiosk
 
 # 2. 配置 API Key
 # 编辑 docker-compose.yml，替换 SILICONFLOW_API_KEY

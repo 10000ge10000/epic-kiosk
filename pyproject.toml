@@ -1,5 +1,5 @@
 [project]
-name = "epic-awesome-gamer"
+name = "epic-kiosk"
 version = "0.4.1"
 dependencies = [
     "apscheduler>=3.11.0",
@@ -15,7 +15,7 @@ authors = [
 description = "🍷 Gracefully claim weekly free games from Epic Store."
 readme = "README.md"
 license = "GPL-3.0-or-later"
-keywords = ["epic", "epic-awesome-gamer", "epic-games-store"]
+keywords = ["epic", "epic-kiosk", "epic-games-store"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -32,11 +32,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/QIN2DIM/epic-awesome-gamer"
-Documentation = "https://github.com/QIN2DIM/epic-awesome-gamer"
-Repository = "https://github.com/QIN2DIM/epic-awesome-gamer.git"
-Issues = "https://github.com/QIN2DIM/epic-awesome-gamer/issues"
-Changelog = "https://github.com/QIN2DIM/epic-awesome-gamer/blob/master/CHANGELOG.md"
+Homepage = "https://github.com/10000ge10000/epic-kiosk"
+Documentation = "https://github.com/10000ge10000/epic-kiosk"
+Repository = "https://github.com/10000ge10000/epic-kiosk.git"
+Issues = "https://github.com/10000ge10000/epic-kiosk/issues"
+Changelog = "https://github.com/10000ge10000/epic-kiosk/blob/main/CHANGELOG.md"
 
 [tool.black]
 line-length = 100

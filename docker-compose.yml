@@ -2,11 +2,11 @@
 # Epic Kiosk - 自动驾驶领取系统
 # ============================================================
 # 公益站点: https://epic.910501.xyz/
-# GitHub: https://github.com/10000ge10000/epic-awesome-gamer
+# GitHub: https://github.com/10000ge10000/epic-kiosk
 # ============================================================
 #
 # 🚀 部署方式：
-#   1. 一键脚本: curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-awesome-gamer/Epic-Autopilot/install.sh | bash
+#   1. 一键脚本: curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-kiosk/main/install.sh | bash
 #   2. 手动部署: 修改 API Key 后执行 docker compose up -d
 #
 # ⚠️ 必须修改: SILICONFLOW_API_KEY
@@ -42,7 +42,7 @@ services:
   # 镜像由 GitHub Actions 自动构建并推送
   # ============================================================
   web:
-    image: ghcr.io/10000ge10000/epic-awesome-gamer-web:latest
+    image: ghcr.io/10000ge10000/epic-kiosk-web:latest
     # 本地开发时取消注释下方两行：
     # build:
     #   context: .
@@ -69,7 +69,7 @@ services:
   # 镜像由 GitHub Actions 自动构建并推送
   # ============================================================
   worker:
-    image: ghcr.io/10000ge10000/epic-awesome-gamer-worker:latest
+    image: ghcr.io/10000ge10000/epic-kiosk-worker:latest
     # 本地开发时取消注释下方两行：
     # build:
     #   context: .
