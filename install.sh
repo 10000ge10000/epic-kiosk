@@ -117,10 +117,10 @@ configure_api_key() {
     echo "   复制生成的密钥（以 sk- 开头）"
     echo ""
 
-    # 输入 API Key
+    # 输入 API Key（从 /dev/tty 读取，支持 curl | bash 管道运行）
     while true; do
         echo ""
-        read -p "请输入你的 API Key (sk-xxx): " api_key
+        read -p "请输入你的 API Key (sk-xxx): " api_key < /dev/tty
 
         if [[ -z "$api_key" ]]; then
             print_error "API Key 不能为空"
@@ -133,7 +133,7 @@ configure_api_key() {
 
         echo ""
         echo -e "你输入的: ${YELLOW}${api_key}${NC}"
-        read -p "确认无误? [Y/n]: " confirm_key
+        read -p "确认无误? [Y/n]: " confirm_key < /dev/tty
         confirm_key=${confirm_key:-Y}
 
         if [[ "$confirm_key" =~ ^[Yy] ]]; then
@@ -153,7 +153,7 @@ clone_project() {
 
     if [ -d "$PROJECT_DIR" ]; then
         print_warning "目录 $PROJECT_DIR 已存在"
-        read -p "是否删除重新克隆? [y/N]: " reclone
+        read -p "是否删除重新克隆? [y/N]: " reclone < /dev/tty
         reclone=${reclone:-N}
 
         if [[ "$reclone" =~ ^[Yy]$ ]]; then
