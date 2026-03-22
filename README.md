@@ -54,118 +54,31 @@ curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-kiosk/main/instal
 
 #### 步骤
 
-**1. 复制下方 Compose 代码到 NAS 的 Docker 管理界面**
+**1. 下载项目**
 
-**2. 修改代码中标注 ⚠️ 的 API Key**
+从 GitHub 下载 ZIP 压缩包并解压到 NAS 目录：
+
+```
+https://github.com/10000ge10000/epic-kiosk/archive/refs/heads/main.zip
+```
+
+**2. 修改配置**
+
+编辑解压后的 `docker-compose.yml` 文件，修改第 97 行的 API Key：
+
+```yaml
+- SILICONFLOW_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # 替换为你的 Key
+```
 
 **3. 启动项目**
 
-<details>
-<summary><b>📝 点击展开 Compose 代码</b></summary>
+在项目目录下执行：
 
-```yaml
-services:
-  # 初始化：克隆项目代码
-  init:
-    image: alpine/git:latest
-    container_name: epic-init
-    volumes:
-      - epic-code:/code
-      - epic-data:/data
-    command: >
-      sh -c '
-        set -e
-        if [ -d "/code/.git" ]; then
-          cd /code && git pull origin main 2>/dev/null || true
-        else
-          git clone --depth 1 https://github.com/10000ge10000/epic-kiosk.git /code
-        fi
-        mkdir -p /data/images /data/logs /data/user_data
-      '
-    restart: "no"
-
-  # Redis：消息队列
-  redis:
-    image: redis:alpine
-    container_name: epic-redis
-    restart: always
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Web：前端服务
-  web:
-    image: python:3.10-slim
-    container_name: epic-web
-    depends_on:
-      - init
-      - redis
-    ports:
-      - "18000:8000"
-    volumes:
-      - epic-code:/app:ro
-      - epic-data:/app/data
-    environment:
-      - REDIS_HOST=redis
-      - TZ=Asia/Shanghai
-    working_dir: /app
-    command: >
-      sh -c '
-        pip install --no-cache-dir fastapi uvicorn redis apscheduler aiofiles python-multipart jinja2 httpx -q
-        exec uvicorn main:app --host 0.0.0.0 --port 8000
-      '
-    restart: always
-
-  # Worker：后台任务执行器
-  worker:
-    image: python:3.12-slim
-    container_name: epic-worker
-    depends_on:
-      - init
-      - redis
-    volumes:
-      - epic-code:/app:ro
-      - epic-data:/app/data
-      - epic-data:/app/app/volumes
-    environment:
-      - REDIS_HOST=redis
-      - TZ=Asia/Shanghai
-      - PYTHONUNBUFFERED=1
-      - ENABLE_APSCHEDULER=false
-      - API_PROVIDER=siliconflow
-      - SILICONFLOW_BASE_URL=https://api.siliconflow.cn/v1
-      # ============================================================
-      # ⚠️⚠️⚠️ 必须修改下方 API Key ⚠️⚠️⚠️
-      # 获取地址: https://cloud.siliconflow.cn/i/OVI2n57p
-      # ============================================================
-      - SILICONFLOW_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-      # ============================================================
-      # 以下无需修改
-      - GEMINI_API_KEY=not_used
-      - CAPTCHA_MODEL=Qwen/Qwen2.5-VL-32B-Instruct
-      - CAPTCHA_MODEL_FALLBACK=Qwen/Qwen2.5-VL-72B-Instruct
-      - PRIMARY_MODEL=Qwen/Qwen2.5-7B-Instruct
-      - PRIMARY_MODEL_FALLBACK=Qwen/Qwen2.5-72B-Instruct
-    working_dir: /app
-    command: >
-      sh -c '
-        apt-get update -qq && apt-get install -y -qq wget gnupg ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcups2 libdbus-1-3 libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 libwayland-client0 libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 libxrandr2 xdg-utils xvfb > /dev/null 2>&1
-        pip install --no-cache-dir uv -q
-        uv pip install --system --no-cache apscheduler pydantic-settings "celery[redis]" "hcaptcha-challenger[camoufox]" openai redis requests beautifulsoup4 lxml -q
-        playwright install firefox > /dev/null 2>&1 && playwright install-deps firefox > /dev/null 2>&1
-        python3 -c "from camoufox.sync_api import Camoufox; Camoufox(headless=True).__enter__().__exit__(None, None, None)" 2>/dev/null || true
-        exec python3 worker.py
-      '
-    restart: always
-
-volumes:
-  epic-code:
-  epic-data:
+```bash
+docker compose up -d --build
 ```
 
-</details>
+**首次启动约需 5-10 分钟**（下载依赖 + 编译镜像）
 
 ---
 
@@ -173,19 +86,18 @@ volumes:
 
 | NAS 品牌 | 操作路径 |
 |----------|----------|
-| **群晖** | Container Manager → 项目 → 新建 → 粘贴代码 |
-| **威联通** | Container Station → 应用程序 → 创建 → 粘贴代码 |
-| **绿联** | Docker → 项目 → 创建项目 → 粘贴代码 |
-| **飞牛** | Docker → Compose → 新建 → 粘贴代码 |
+| **群晖** | Container Manager → 项目 → 新建 → 选择解压目录 |
+| **威联通** | Container Station → 应用程序 → 创建 → 上传 compose 文件 |
+| **绿联** | Docker → 项目 → 创建项目 → 选择目录 |
+| **飞牛** | Docker → Compose → 新建 → 选择目录 |
 
 ---
 
 #### ⚠️ 部署前必读
 
-1. **修改 API Key**：将代码中的 `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` 替换为你的 Key
-   - 获取地址：[https://cloud.siliconflow.cn/i/OVI2n57p](https://cloud.siliconflow.cn/i/OVI2n57p)（注册送 ¥16 代金券）
+1. **修改 API Key**：获取地址 [https://cloud.siliconflow.cn/i/OVI2n57p](https://cloud.siliconflow.cn/i/OVI2n57p)（注册送 ¥16 代金券）
 
-2. **首次启动约需 5-10 分钟**（克隆代码 + 安装依赖）
+2. **端口冲突**：默认端口 `18000`，如需修改请编辑 `docker-compose.yml` 第 51 行
 
 3. **部署完成后访问**：`http://NAS的IP:18000`
 

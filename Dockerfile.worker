@@ -2,6 +2,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# 预创建挂载点目录（解决飞牛 NAS 等 Docker 存储驱动兼容性问题）
+RUN mkdir -p /app/data /app/app/volumes
+
 # 安装系统依赖
 RUN apt-get update && apt-get install -y \
     wget \
