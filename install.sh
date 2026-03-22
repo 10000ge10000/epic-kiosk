@@ -125,58 +125,78 @@ clone_project() {
         return 0
     fi
 
-    # 询问用户部署目录
-    echo -e "${CYAN}请选择部署位置：${NC}"
-    echo "  1) 当前目录 ($(pwd))"
-    echo "  2) 自定义路径"
-    echo ""
-    read -p "请选择 [1/2, 默认1]: " choice < /dev/tty
-    choice=${choice:-1}
+    # 检查 git
+    if ! command -v git &> /dev/null; then
+        print_info "安装 git..."
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq git
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y -q git
+        fi
+    fi
 
-    case $choice in
-        1)
-            PROJECT_DIR=$(pwd)
-            ;;
-        2)
-            read -p "请输入部署路径: " custom_path < /dev/tty
-            if [ -z "$custom_path" ]; then
-                print_error "路径不能为空"
+    # 检测是否通过 curl | bash 运行（管道模式）
+    if [ -t 0 ]; then
+        # 交互模式：询问用户部署目录
+        echo -e "${CYAN}请选择部署位置：${NC}"
+        echo "  1) 当前目录 ($(pwd))"
+        echo "  2) 自定义路径"
+        echo ""
+        read -p "请选择 [1/2, 默认1]: " choice < /dev/tty
+        choice=${choice:-1}
+
+        case $choice in
+            1)
+                PROJECT_DIR=$(pwd)
+                ;;
+            2)
+                read -p "请输入部署路径: " custom_path < /dev/tty
+                if [ -z "$custom_path" ]; then
+                    print_error "路径不能为空"
+                    exit 1
+                fi
+                PROJECT_DIR="$custom_path"
+                mkdir -p "$PROJECT_DIR"
+                ;;
+            *)
+                print_error "无效选择"
                 exit 1
+                ;;
+        esac
+
+        print_info "部署目录: $PROJECT_DIR"
+
+        # 检查目录是否已有项目
+        if [ -d "$PROJECT_DIR/.git" ]; then
+            print_warning "目录 $PROJECT_DIR 已有 Git 项目"
+            read -p "是否更新代码? [Y/n]: " update_code < /dev/tty
+            update_code=${update_code:-Y}
+
+            if [[ "$update_code" =~ ^[Yy]$ ]]; then
+                cd "$PROJECT_DIR"
+                git pull origin main 2>/dev/null || print_warning "更新失败，继续使用现有代码"
             fi
-            PROJECT_DIR="$custom_path"
-            mkdir -p "$PROJECT_DIR"
-            ;;
-        *)
-            print_error "无效选择"
-            exit 1
-            ;;
-    esac
-
-    print_info "部署目录: $PROJECT_DIR"
-
-    # 检查目录是否已有项目
-    if [ -d "$PROJECT_DIR/.git" ]; then
-        print_warning "目录 $PROJECT_DIR 已有 Git 项目"
-        read -p "是否更新代码? [Y/n]: " update_code < /dev/tty
-        update_code=${update_code:-Y}
-
-        if [[ "$update_code" =~ ^[Yy]$ ]]; then
-            cd "$PROJECT_DIR"
-            git pull origin main 2>/dev/null || print_warning "更新失败，继续使用现有代码"
+        else
+            # 目录不为空且不是 Git 项目，创建子目录
+            if [ "$(ls -A "$PROJECT_DIR" 2>/dev/null)" ]; then
+                print_info "当前目录不为空，创建 epic-kiosk 子目录..."
+                PROJECT_DIR="$PROJECT_DIR/epic-kiosk"
+            fi
+            print_info "克隆项目到 $PROJECT_DIR ..."
+            git clone -b main https://github.com/10000ge10000/epic-kiosk.git "$PROJECT_DIR"
         fi
     else
-        # 检查 git
-        if ! command -v git &> /dev/null; then
-            print_info "安装 git..."
-            if command -v apt-get &> /dev/null; then
-                sudo apt-get update -qq && sudo apt-get install -y -qq git
-            elif command -v yum &> /dev/null; then
-                sudo yum install -y -q git
-            fi
-        fi
+        # 管道模式：自动创建目录并克隆
+        PROJECT_DIR="$(pwd)/epic-kiosk"
+        print_info "管道模式：自动创建目录 $PROJECT_DIR"
 
-        print_info "克隆项目到 $PROJECT_DIR ..."
-        git clone -b main https://github.com/10000ge10000/epic-kiosk.git "$PROJECT_DIR"
+        if [ -d "$PROJECT_DIR/.git" ]; then
+            print_info "更新现有项目..."
+            cd "$PROJECT_DIR" && git pull origin main 2>/dev/null || print_warning "更新失败，继续使用现有代码"
+        else
+            print_info "克隆项目..."
+            git clone -b main https://github.com/10000ge10000/epic-kiosk.git "$PROJECT_DIR"
+        fi
     fi
 
     cd "$PROJECT_DIR"
