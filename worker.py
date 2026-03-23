@@ -241,11 +241,11 @@ ERROR_TYPE_MESSAGES = {
         "hint": "Epic 服务可能不可用，请稍后重试",
         "nuke": False,
     },
-    # Cookie 无效
+    # Cookie 无效（下次执行时会自动重新登录，无需删除）
     "cookie_invalid": {
-        "status": "❌ 登录已过期",
-        "hint": "请重新托管账号",
-        "nuke": True,
+        "status": "⚠️ 登录已过期，请重新提交任务",
+        "hint": "系统会自动用存储的密码重新登录",
+        "nuke": False,  # 不删除账号，下次执行会自动重新登录
     },
     # 未知错误
     "unknown": {
@@ -258,12 +258,6 @@ ERROR_TYPE_MESSAGES = {
     "all_owned": {
         "status": "✅ 所有游戏已在库中",
         "hint": None,
-    },
-    # Cookie 无效（游戏收集阶段）
-    "cookie_invalid": {
-        "status": "❌ 登录已过期",
-        "hint": "请重新托管账号",
-        "nuke": True,
     },
     # 未知错误（游戏收集阶段）
     "unknown_error": {
