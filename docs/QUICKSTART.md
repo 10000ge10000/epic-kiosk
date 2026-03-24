@@ -3,15 +3,14 @@
 ## 一键部署（仅需 1 条命令）
 
 ```bash
-# 设置 API Key 并一键部署
-export SILICONFLOW_API_KEY="sk-你的Key"
+# 直接一键部署（Cookie-Only）
 curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-kiosk/main/install.sh | bash
 ```
 
 脚本会自动完成：
 - ✅ 检测系统架构
 - ✅ 克隆项目代码
-- ✅ 配置 API Key
+- ✅ 生成基础配置
 - ✅ 本地编译镜像
 - ✅ 启动服务
 
@@ -19,28 +18,22 @@ curl -fsSL https://raw.githubusercontent.com/10000ge10000/epic-kiosk/main/instal
 
 ## 手动部署（3 步）
 
-### 0️⃣ 准备 API Key
-
-访问 [SiliconFlow 官网](https://cloud.siliconflow.cn/i/OVI2n57p) 注册并获取 API Key。
-
-> 🆓 **为什么选择 SiliconFlow？**
-> - 主力模型 **Qwen2.5-7B-Instruct 完全免费**
-> - 验证码模型价格极低（¥0.5/百万 tokens）
-> - 国内访问速度快，无需科学上网
-> - 本项目专为该平台优化
->
-> 👉 **使用邀请链接注册，双方各得 ¥16 代金券**
-
 ### 1️⃣ 克隆项目
 ```bash
 git clone https://github.com/10000ge10000/epic-kiosk.git
 cd epic-kiosk
 ```
 
-### 2️⃣ 配置 API Key
-编辑 `docker-compose.yml`，找到 `SILICONFLOW_API_KEY` 配置项：
-```yaml
-- SILICONFLOW_API_KEY=sk-你的Key  # 替换为你的 SiliconFlow API Key
+### 2️⃣ 配置 Cookie-Only
+创建 `.env`：
+```bash
+cp .env.example .env
+```
+
+并至少写入：
+```env
+EPIC_EMAIL=your_email@example.com
+COOKIE_ONLY_MODE=true
 ```
 
 ### 3️⃣ 构建并启动
@@ -56,17 +49,16 @@ docker compose up -d --build
 
 打开浏览器：`http://服务器IP:18000`
 
-在 Web 界面添加 Epic 账号，系统会自动处理后续所有流程。
+首次请先让对应账号在会话目录完成一次手动登录，后续定时任务将复用 Cookie。
 
 ---
 
 ## 📝 说明
 
-- **无需配置文件**：所有配置都在 `docker-compose.yml` 中
+- **配置简单**：主要在 `.env` 中配置 `EPIC_EMAIL` 和 `COOKIE_ONLY_MODE`
 - **无需配置账号**：Epic 账号在 Web 界面添加
-- **模型已优化**：双模型自动切换，无需手动配置
-- **主力模型免费**：Qwen2.5-7B-Instruct 完全免费
-- **专属优化**：针对 SiliconFlow 平台优化
+- **Cookie-Only**：不执行账号密码自动登录，仅复用会话
+- **无 AI 依赖**：不再要求验证码模型 API Key
 
 ---
 

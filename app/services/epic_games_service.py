@@ -11,7 +11,6 @@ from json import JSONDecodeError
 from typing import List
 
 import httpx
-from hcaptcha_challenger.agent import AgentV
 from loguru import logger
 from playwright.async_api import Page
 from playwright.async_api import expect, TimeoutError, FrameLocator
@@ -19,7 +18,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from models import OrderItem, Order
 from models import PromotionGame
-from settings import settings, RUNTIME_DIR
+from settings import RUNTIME_DIR
 
 URL_CLAIM = "https://store.epicgames.com/en-US/free-games"
 URL_LOGIN = (
@@ -451,6 +450,23 @@ class EpicGames:
         raise AssertionError("Could not find Place Order button in iframe")
 
     @staticmethod
+    async def _has_captcha_challenge(page: Page) -> bool:
+        """Cookie-Only 模式下检测是否触发图形验证。"""
+        challenge_markers = [
+            "iframe[src*='hcaptcha']",
+            "iframe[title*='hCaptcha']",
+            "text=验证您是人类",
+            "text=Verify you are human",
+        ]
+        for selector in challenge_markers:
+            try:
+                if await page.locator(selector).first.is_visible(timeout=2000):
+                    return True
+            except Exception:
+                continue
+        return False
+
+    @staticmethod
     async def _uk_confirm_order(wpc: FrameLocator):
         logger.debug("UK confirm order")
         with suppress(TimeoutError):
@@ -461,7 +477,6 @@ class EpicGames:
 
     async def _handle_instant_checkout(self, page: Page):
         logger.info("🚀 开始即时结账流程...")
-        agent = AgentV(page=page, agent_config=settings)
 
         try:
             wpc, payment_btn = await self._active_purchase_container(page)
@@ -469,11 +484,8 @@ class EpicGames:
             await payment_btn.click(force=True)
             await page.wait_for_timeout(3000)
 
-            try:
-                logger.debug("检查验证码...")
-                await agent.wait_for_challenge()
-            except Exception as e:
-                logger.debug(f"验证码检测跳过: {e}")
+            if await self._has_captcha_challenge(page):
+                raise RuntimeError("检测到图形验证，Cookie-Only 模式不处理验证码")
 
             try:
                 if not await payment_btn.is_visible():
@@ -595,20 +607,17 @@ class EpicGames:
         logger.debug("Move ALL paid games from the shopping cart out")
         await self._empty_cart(self.page)
 
-        agent = AgentV(page=self.page, agent_config=settings)
         await self.page.click("//button//span[text()='Check Out']")
         await self._agree_license(self.page)
 
-        try:
-            logger.debug("Move to webPurchaseContainer iframe")
-            wpc, payment_btn = await self._active_purchase_container(self.page)
-            logger.debug("Click payment button")
-            await self._uk_confirm_order(wpc)
-            await agent.wait_for_challenge()
-        except Exception as err:
-            logger.warning(f"验证码解决失败: {err}")
-            await self.page.reload()
-            return await self._purchase_free_game()
+        logger.debug("Move to webPurchaseContainer iframe")
+        wpc, payment_btn = await self._active_purchase_container(self.page)
+        logger.debug("Click payment button")
+        await self._uk_confirm_order(wpc)
+        await payment_btn.click(force=True)
+
+        if await self._has_captcha_challenge(self.page):
+            raise RuntimeError("检测到图形验证，Cookie-Only 模式不处理验证码")
 
     @retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(2), reraise=True)
     async def collect_weekly_games(self, promotions: List[PromotionGame]):
