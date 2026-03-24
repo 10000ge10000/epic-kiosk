@@ -102,6 +102,10 @@ class EpicSettings(AgentConfig):
 
     EPIC_EMAIL: str = Field(default_factory=lambda: os.getenv("EPIC_EMAIL"))
     EPIC_PASSWORD: SecretStr = Field(default_factory=lambda: os.getenv("EPIC_PASSWORD"))
+    COOKIE_ONLY_MODE: bool = Field(
+        default=os.getenv("COOKIE_ONLY_MODE", "false").lower() in ("1", "true", "yes", "on"),
+        description="仅使用已保存的浏览器会话（Cookie）执行任务，禁用账号密码登录",
+    )
     DISABLE_BEZIER_TRAJECTORY: bool = Field(default=True)
 
     # === hcaptcha-challenger 超时配置 ===

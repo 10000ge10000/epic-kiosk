@@ -501,6 +501,11 @@ class EpicAuthorization:
                 logger.success("✅ Epic Games 已登录")
                 return ErrorType.SUCCESS
 
+            # 仅 Cookie 模式：不执行账号密码登录
+            if settings.COOKIE_ONLY_MODE:
+                logger.error("❌ COOKIE_ONLY_MODE 已启用，当前会话未登录，请先手动刷新 Cookie")
+                return ErrorType.COOKIE_INVALID
+
             # 执行登录
             login_result = await self._login()
             if login_result:
